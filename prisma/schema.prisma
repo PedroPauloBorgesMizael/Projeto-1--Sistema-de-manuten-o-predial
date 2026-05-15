@@ -7,6 +7,47 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model User {
+  id               String    @id @default(uuid())
+  name             String
+  email            String    @unique
+  password         String
+  role             Role
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  comments         Comment[]
+  ticketsRequested Ticket[]  @relation("Requester")
+  ticketsAssigned  Ticket[]  @relation("Technician")
+}
+
+model Ticket {
+  id           String       @id @default(uuid())
+  title        String
+  description  String
+  category     String
+  priority     TicketPriority @default(MEDIUM)
+  status       TicketStatus @default(NEW)
+  location     String
+  requesterId  String
+  technicianId String?
+  createdAt    DateTime     @default(now())
+  completedAt  DateTime?
+  comments     Comment[]
+  requester    User         @relation("Requester", fields: [requesterId], references: [id])
+  technician   User?        @relation("Technician", fields: [technicianId], references: [id])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  message   String
+  private   Boolean  @default(false)
+  ticketId  String
+  userId    String
+  createdAt DateTime @default(now())
+  ticket    Ticket   @relation(fields: [ticketId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
 enum Role {
   ADMIN
   TECHNICIAN
@@ -14,58 +55,14 @@ enum Role {
 }
 
 enum TicketStatus {
-  OPEN
+  NEW
   IN_PROGRESS
-  DONE
+  PENDING
+  CLOSED
 }
 
-model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role
-  isActive  Boolean  @default(true)
-
-  ticketsRequested Ticket[] @relation("Requester")
-  ticketsAssigned  Ticket[] @relation("Technician")
-
-  comments Comment[]
-
-  createdAt DateTime @default(now())
-}
-
-model Ticket {
-  id           String   @id @default(uuid())
-  title        String
-  description  String
-  category     String
-  priority     String
-  status       TicketStatus @default(OPEN)
-  location     String
-
-  requesterId  String
-  technicianId String?
-
-  requester User @relation("Requester", fields: [requesterId], references: [id])
-  technician User? @relation("Technician", fields: [technicianId], references: [id])
-
-  comments Comment[]
-
-  createdAt   DateTime @default(now())
-  completedAt DateTime?
-}
-
-model Comment {
-  id        String   @id @default(uuid())
-  message   String
-  private   Boolean  @default(false)
-
-  ticketId  String
-  userId    String
-
-  ticket Ticket @relation(fields: [ticketId], references: [id])
-  user   User   @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
 }
