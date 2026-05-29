@@ -1,21 +1,16 @@
-import { prisma } from "@/shared/database/prisma";
-
-interface IRequest {
-  ticketId: string;
-  technicianId: string;
-}
+import { TicketRepository } from "../repositories/TicketRepository";
+import { AssignTechnicianDTO } from "../dtos/AssignTechnicianDTO";
 
 export class AssignTechnicianService {
+  private repository = TicketRepository.getInstance();
+
   async execute({
     ticketId,
     technicianId,
-  }: IRequest) {
+  }: AssignTechnicianDTO) {
 
-    const technician = await prisma.user.findUnique({
-      where: {
-        id: technicianId,
-      },
-    });
+    const technician =
+      await this.repository.findUserById(technicianId);
 
     if (!technician) {
       throw new Error("Technician not found");
@@ -25,15 +20,11 @@ export class AssignTechnicianService {
       throw new Error("User is not a technician");
     }
 
-    const ticket = await prisma.ticket.update({
-      where: {
-        id: ticketId,
-      },
-      data: {
+    const ticket =
+      await this.repository.assignTechnician({
+        ticketId,
         technicianId,
-        status: "IN_PROGRESS",
-      },
-    });
+      });
 
     return ticket;
   }

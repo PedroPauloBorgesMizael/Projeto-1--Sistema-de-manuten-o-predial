@@ -1,32 +1,43 @@
-import { prisma } from "@/shared/database/prisma";
 import { hash } from "bcryptjs";
-import { UserRole } from "../types/UserRoles";
+
+import { CreateUserDTO } from "../dtos/CreateUserDTO";
+import { UserRole } from "../entities/User";
+import { UserRepository } from "../repositories/UserRepository";
 
 export class CreateUserService {
-  async execute({ name, email, password, role }: any) {
+  private repository = UserRepository.getInstance();
 
-    if (!Object.values(UserRole).includes(role)) {
+  async execute({
+    name,
+    email,
+    password,
+    role,
+  }: CreateUserDTO) {
+
+    if (
+      !["ADMIN", "TECHNICIAN", "REQUESTER"]
+        .includes(role)
+    ) {
       throw new Error("Invalid role");
     }
 
-    const userExists = await prisma.user.findUnique({
-      where: { email },
-    });
+    const userExists =
+      await this.repository.findByEmail(email);
 
     if (userExists) {
       throw new Error("User already exists");
     }
 
-    const passwordHash = await hash(password, 8);
+    const passwordHash =
+      await hash(password, 8);
 
-    const user = await prisma.user.create({
-      data: {
+    const user =
+      await this.repository.create({
         name,
         email,
         password: passwordHash,
-        role,
-      },
-    });
+        role: role as UserRole,
+      });
 
     return user;
   }

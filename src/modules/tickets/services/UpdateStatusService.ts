@@ -1,33 +1,27 @@
-import { prisma } from "@/shared/database/prisma";
-
-interface IRequest {
-  ticketId: string;
-  status: "OPEN" | "IN_PROGRESS" | "DONE";
-}
+import { TicketRepository } from "../repositories/TicketRepository";
+import { UpdateStatusDTO } from "../dtos/UpdateStatusDTO";
 
 export class UpdateStatusService {
-  async execute({ ticketId, status }: IRequest) {
+  private repository = TicketRepository.getInstance();
 
-    const ticketExists = await prisma.ticket.findUnique({
-      where: {
-        id: ticketId,
-      },
-    });
+  async execute({
+    ticketId,
+    status,
+  }: UpdateStatusDTO) {
+
+    const ticketExists =
+      await this.repository.findById(ticketId);
 
     if (!ticketExists) {
       throw new Error("Ticket not found");
     }
 
-    const ticket = await prisma.ticket.update({
-      where: {
-        id: ticketId,
-      },
-      data: {
+    const ticket =
+      await this.repository.updateStatus({
+        ticketId,
         status,
-        completedAt: status === "DONE" ? new Date() : null,
-      },
-    });
+      });
 
     return ticket;
   }
-}
+} 

@@ -1,15 +1,9 @@
-import { prisma } from "@/shared/database/prisma";
-
-interface IRequest {
-  title: string;
-  description: string;
-  category: string;
-  priority: string;
-  location: string;
-  requesterId: string;
-}
+import { CreateTicketDTO } from "../dtos/CreateTicketDTO";
+import { TicketRepository } from "../repositories/TicketRepository";
 
 export class CreateTicketService {
+  private repository = TicketRepository.getInstance();
+
   async execute({
     title,
     description,
@@ -17,13 +11,10 @@ export class CreateTicketService {
     priority,
     location,
     requesterId,
-  }: IRequest) {
+  }: CreateTicketDTO) {
 
-    const requester = await prisma.user.findUnique({
-      where: {
-        id: requesterId,
-      },
-    });
+    const requester =
+      await this.repository.findUserById(requesterId);
 
     if (!requester) {
       throw new Error("Requester not found");
@@ -33,16 +24,15 @@ export class CreateTicketService {
       throw new Error("Inactive user");
     }
 
-    const ticket = await prisma.ticket.create({
-      data: {
+    const ticket =
+      await this.repository.create({
         title,
         description,
         category,
         priority,
         location,
         requesterId,
-      },
-    });
+      });
 
     return ticket;
   }

@@ -1,30 +1,23 @@
-import { prisma } from "@/shared/database/prisma";
+import { UserRepository } from "../repositories/UserRepository";
 
 interface IRequest {
   userId: string;
 }
 
 export class ActivateUserService {
+  private repository = UserRepository.getInstance();
+
   async execute({ userId }: IRequest) {
 
-    const userExists = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-    });
+    const userExists =
+      await this.repository.findById(userId);
 
     if (!userExists) {
       throw new Error("User not found");
     }
 
-    const user = await prisma.user.update({
-      where: {
-        id: userId,
-      },
-      data: {
-        isActive: true,
-      },
-    });
+    const user =
+      await this.repository.activate(userId);
 
     return user;
   }

@@ -1,22 +1,16 @@
-import { prisma } from "@/shared/database/prisma";
+import { UserRepository } from "../repositories/UserRepository";
 
 interface IRequest {
   userId: string;
 }
 
 export class DeleteUserService {
+  private repository = UserRepository.getInstance();
+
   async execute({ userId }: IRequest) {
 
-    const userExists = await prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
-      include: {
-        ticketsRequested: true,
-        ticketsAssigned: true,
-        comments: true,
-      },
-    });
+    const userExists =
+      await this.repository.findByIdWithRelations(userId);
 
     if (!userExists) {
       throw new Error("User not found");
@@ -32,11 +26,7 @@ export class DeleteUserService {
       );
     }
 
-    await prisma.user.delete({
-      where: {
-        id: userId,
-      },
-    });
+    await this.repository.delete(userId);
 
     return {
       message: "User deleted successfully",

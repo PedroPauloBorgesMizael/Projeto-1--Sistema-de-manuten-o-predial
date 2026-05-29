@@ -1,32 +1,29 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
-import { env } from "@/config/env";
+import { ValidateTokenService } from "../services/ValidateTokenService";
 
-export function ensureAuthenticated(
-    req: Request,
-    res: Response,
-    next: NextFunction
+export async function ensureAuthenticated(
+  request: Request,
+  response: Response,
+  next: NextFunction
 ) {
-    const authHeader = req.headers.authorization;
+  const authHeader = request.headers.authorization;
 
-    if (!authHeader) {
-        return res.status(401).json({ message: "Token missing" });
-    }
+  if (!authHeader) {
+    return response.status(401).json({
+      message: "Token missing",
+    });
+  }
 
-    const [, token] = authHeader.split(" ");
+  const [, token] = authHeader.split(" ");
 
-    try {
-        const decoded = jwt.verify(token, env.jwt.secret);
+  const service = new ValidateTokenService();
 
-        const { sub, role } = decoded as any;
+  const { userId, role } = service.execute(token);
 
-        req.user = {
-            id: sub,
-            role,
-        };
+  request.user = {
+    id: userId,
+    role,
+  };
 
-        return next();
-    } catch {
-        return res.status(401).json({ message: "Invalid token" });
-    }
+  next();
 }

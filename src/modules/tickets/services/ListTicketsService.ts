@@ -1,14 +1,20 @@
-import { prisma } from "@/shared/database/prisma";
+import { TicketRepository } from "../repositories/TicketRepository";
+
+interface IRequest {
+  userId: string;
+  role: "ADMIN" | "TECHNICIAN" | "REQUESTER";
+}
 
 export class ListTicketsService {
-  async execute() {
+  private repository = TicketRepository.getInstance();
 
-    const tickets = await prisma.ticket.findMany({
-      include: {
-        requester: true,
-        technician: true,
-      },
-    });
+  async execute({ userId, role }: IRequest) {
+
+    const tickets =
+      await this.repository.findMany({
+        userId,
+        role,
+      });
 
     return tickets;
   }

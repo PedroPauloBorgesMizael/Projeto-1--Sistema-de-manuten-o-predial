@@ -1,10 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+
 import { env } from "@/config/env";
 
-interface TokenPayload {
+type UserRole = "ADMIN" | "TECHNICIAN" | "REQUESTER";
+
+interface TokenPayload extends jwt.JwtPayload {
   sub: string;
-  role: string;
+  role: UserRole;
 }
 
 export function ensureAuthenticated(
@@ -15,28 +18,20 @@ export function ensureAuthenticated(
   const authHeader = request.headers.authorization;
 
   if (!authHeader) {
-    return response.status(401).json({
-      message: "Token missing",
-    });
+    throw new Error("Token missing");
   }
 
   const [, token] = authHeader.split(" ");
 
-  try {
-    const decoded = jwt.verify(
-      token,
-      env.jwt.secret
-    ) as TokenPayload;
+  const decoded = jwt.verify(
+    token,
+    env.jwt.secret as string
+  ) as TokenPayload;
 
-    request.user = {
-      id: decoded.sub,
-      role: decoded.role,
-    };
+  request.user = {
+    id: decoded.sub,
+    role: decoded.role,
+  };
 
-    return next();
-  } catch {
-    return response.status(401).json({
-      message: "Invalid token",
-    });
-  }
+  next();
 }

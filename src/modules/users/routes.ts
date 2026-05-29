@@ -6,24 +6,14 @@ const routes = Router();
 
 const controller = new UserController();
 
+routes.use(ensureAuthenticated);
+
 routes.post("/", controller.create);
 
-routes.patch(
-  "/:id/deactivate",
-  ensureAuthenticated,
-  controller.deactivate
-);
+routes.patch("/:id/deactivate", controller.deactivate);
 
-routes.patch(
-  "/:id/activate",
-  ensureAuthenticated,
-  controller.activate
-);
+routes.patch("/:id/activate", controller.activate);
 
-routes.delete(
-  "/:id",
-  ensureAuthenticated,
-  controller.delete
-);
+routes.delete("/:id", controller.delete);
 
 export default routes;

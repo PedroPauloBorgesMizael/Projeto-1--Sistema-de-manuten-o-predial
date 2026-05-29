@@ -31,6 +31,7 @@ export class TicketController {
      *                 type: string
      *               priority:
      *                 type: string
+     *                 enum: ["LOW", "MEDIUM", "HIGH"]
      *               location:
      *                 type: string
      *     responses:
@@ -78,12 +79,14 @@ export class TicketController {
      *         description: Não autenticado
      */
     async list(request: Request, response: Response) {
-
         const service = new ListTicketsService();
 
-        const result = await service.execute();
+        const tickets = await service.execute({
+            userId: request.user.id,
+            role: request.user.role as "ADMIN" | "TECHNICIAN" | "REQUESTER",
+        });
 
-        return response.json(result);
+        return response.json(tickets);
     }
 
     /**
@@ -142,6 +145,7 @@ export class TicketController {
      *             properties:
      *               status:
      *                 type: string
+     *                 enum: ["OPEN", "IN_PROGRESS", "PENDING", "CLOSED"]
      *                 example: IN_PROGRESS
      *     responses:
      *       200:

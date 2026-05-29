@@ -6,6 +6,7 @@ import { swaggerSpec } from "./swagger";
 import userRoutes from "@/modules/users/routes";
 import authRoutes from "@/modules/auth/routes";
 import ticketRoutes from "@/modules/tickets/routes";
+import commentRoutes from "./modules/comments/routes";
 
 const app = express();
 
@@ -17,8 +18,10 @@ app.use(
   swaggerUi.setup(swaggerSpec)
 );
 
-app.use("/users", userRoutes);
 app.use("/auth", authRoutes);
+app.use("/users", userRoutes);
+app.use("/tickets", ticketRoutes);
+app.use("/comments", commentRoutes);
 
 
 export { app };

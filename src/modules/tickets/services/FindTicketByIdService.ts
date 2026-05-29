@@ -1,22 +1,16 @@
-import { prisma } from "@/shared/database/prisma";
+import { TicketRepository } from "../repositories/TicketRepository";
 
 interface IRequest {
   ticketId: string;
 }
 
 export class FindTicketByIdService {
+  private repository = TicketRepository.getInstance();
+
   async execute({ ticketId }: IRequest) {
 
-    const ticket = await prisma.ticket.findUnique({
-      where: {
-        id: ticketId,
-      },
-      include: {
-        requester: true,
-        technician: true,
-        comments: true,
-      },
-    });
+    const ticket =
+      await this.repository.findById(ticketId);
 
     if (!ticket) {
       throw new Error("Ticket not found");
