@@ -65,12 +65,14 @@ export class CommentController {
    *         description: Lista de comentários
    */
   async list(request: Request, response: Response) {
-
     const { ticketId } = request.params;
 
     const service = new ListCommentsService();
 
-    const result = await service.execute(ticketId);
+    const result = await service.execute({
+      ticketId,
+      role: request.user.role as "ADMIN" | "TECHNICIAN" | "REQUESTER",
+    });
 
     return response.json(result);
   }
