@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { CreateUserService } from "../services/CreateUserService";
+import { ListUsersService } from "../services/ListUsersService";
 import { DeleteUserService } from "../services/DeleteUserService";
 import { ActivateUserService } from "../services/ActivateUserService";
 import { DeactivateUserService } from "../services/DeactivateUserService";
@@ -46,6 +47,26 @@ export class UserController {
         });
 
         return response.status(201).json(result);
+    }
+
+    /**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Listar usuários
+ *     security:
+ *       - bearerAuth: []
+ *     tags: [Users]
+ *     responses:
+ *       200:
+ *         description: Lista de usuários
+ */
+    async list(request: Request, response: Response) {
+        const service = new ListUsersService();
+
+        const result = await service.execute();
+
+        return response.json(result);
     }
 
     /**

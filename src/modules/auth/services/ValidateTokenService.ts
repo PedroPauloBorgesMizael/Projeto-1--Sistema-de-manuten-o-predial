@@ -8,14 +8,18 @@ interface TokenPayload {
 
 export class ValidateTokenService {
   execute(token: string) {
-    const decoded = jwt.verify(
-      token,
-      env.jwt.secret
-    ) as TokenPayload;
+    try {
+      const decoded = jwt.verify(
+        token,
+        env.jwt.secret
+      ) as TokenPayload;
 
-    return {
-      userId: decoded.sub,
-      role: decoded.role,
-    };
+      return {
+        userId: decoded.sub,
+        role: decoded.role,
+      };
+    } catch {
+      return null;
+    }
   }
 }

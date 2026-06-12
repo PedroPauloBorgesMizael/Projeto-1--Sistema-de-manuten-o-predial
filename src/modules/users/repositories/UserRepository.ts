@@ -5,7 +5,7 @@ import { CreateUserDTO } from "../dtos/CreateUserDTO";
 export class UserRepository {
   private static INSTANCE: UserRepository;
 
-  private constructor() {}
+  private constructor() { }
 
   static getInstance() {
     if (!UserRepository.INSTANCE) {
@@ -19,6 +19,22 @@ export class UserRepository {
   async create(data: CreateUserDTO) {
     return prisma.user.create({
       data,
+    });
+  }
+
+  async findAll() {
+    return prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+      },
+      orderBy: {
+        name: "asc",
+      },
     });
   }
 
@@ -67,17 +83,17 @@ export class UserRepository {
       },
     });
   }
-  
+
   async findByIdWithRelations(userId: string) {
-  return prisma.user.findUnique({
-    where: {
-      id: userId,
-    },
-    include: {
-      ticketsRequested: true,
-      ticketsAssigned: true,
-      comments: true,
-    },
-  });
-}
+    return prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      include: {
+        ticketsRequested: true,
+        ticketsAssigned: true,
+        comments: true,
+      },
+    });
+  }
 }

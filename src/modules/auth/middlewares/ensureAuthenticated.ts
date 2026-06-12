@@ -6,24 +6,38 @@ export async function ensureAuthenticated(
   response: Response,
   next: NextFunction
 ) {
-  const authHeader = request.headers.authorization;
+  try {
+    const authHeader = request.headers.authorization;
 
-  if (!authHeader) {
+    if (!authHeader) {
+      return response.status(401).json({
+        message: "Token missing",
+      });
+    }
+
+    const [, token] = authHeader.split(" ");
+
+    const service = new ValidateTokenService();
+
+    const tokenData = service.execute(token);
+
+    if (!tokenData) {
+      return response.status(401).json({
+        message: "Token expired or invalid",
+      });
+    }
+
+    const { userId, role } = tokenData;
+
+    request.user = {
+      id: userId,
+      role,
+    };
+
+    return next();
+  } catch (error) {
     return response.status(401).json({
-      message: "Token missing",
+      message: "Token expired or invalid",
     });
   }
-
-  const [, token] = authHeader.split(" ");
-
-  const service = new ValidateTokenService();
-
-  const { userId, role } = service.execute(token);
-
-  request.user = {
-    id: userId,
-    role,
-  };
-
-  next();
 }
